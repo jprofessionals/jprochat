@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "newman": "^6.1.3"
+  },
+  "dependencies": {
+    "newman-reporter-html": "^1.0.5"
+  }
+}

@@ -1,0 +1,96 @@
+<div id="chat_div">ved å trykke <button id="show_chat">her</button></div>
+<div id="chat_container">
+    <div id="chat_header">jPro chatbot</div>
+    <div id="chat_window"></div>
+    <form id="chat_form">
+        <label for="question_input"></label><input id="question_input" type="text" size="70%" placeholder="Sp&oslash;r oss ...">
+        <button type="submit">Sp&oslash;r</button>
+    </form>
+</div>
+<script>
+    function askQuestion(question) {
+        if (!question) return;
+            fetch('https://jprochat.jpro.no/jprochat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    question: question,
+                }),
+            }).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error: ' + response.statusText);
+                }
+            }).then(function (data) {
+                if (data && data.answer) {
+                    addMessageToChatWindow(JPro, data.answer)
+                } else {
+                    addMessageToChatWindow(System, 'beklager, feil mot server')
+                }
+            }).catch(function (error) {
+                    addMessageToChatWindow(System, 'beklager, feil mot server: ' + error.message)
+            });
+    }
+
+    const System = 0
+    const User = 1
+    const JPro = 2
+
+    function addMessageToChatWindow(messageType, message) {
+        let sender
+        let cssClass
+        switch (messageType) {
+            case JPro:
+                sender = "jPro: "
+                cssClass = "bot-message"
+                break
+            case User:
+                sender = "Du: "
+                cssClass = "user-message"
+                break
+            default:
+            case System:
+                sender = ""
+                cssClass = "system-message"
+                break
+        }
+        let chatWindow = document.getElementById("chat_window");
+        let newMsg = document.createElement("div");
+        newMsg.textContent = sender + message;
+        newMsg.classList.add(cssClass);
+        chatWindow.appendChild(newMsg);
+
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    document.getElementById("show_chat").addEventListener("click", function() {
+        document.getElementById("chat_div").style.display = "none";
+        document.getElementById("chat_container").style.display = "block";
+    });
+
+    function performSubmit() {
+        let question = document.getElementById("question_input").value;
+        if (!question) return
+        document.getElementById("question_input").value = '';
+        addMessageToChatWindow(User, question);
+        askQuestion(question)
+    }
+
+    document.getElementById('question_input').onkeydown = function(e) {
+        if(e.key === "Enter"){
+            performSubmit()
+       }
+    };
+
+    document.getElementById("chat_form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        performSubmit()
+    });
+
+    addMessageToChatWindow(System, "Velkommen til jPros chat robot!");
+    addMessageToChatWindow(System, "Her kan du stille spørsmål om oss som:");
+    addMessageToChatWindow(System, "- har dere erfaring innen media ?");
+    addMessageToChatWindow(System, "- hvor mange kan kotlin ?");
+    addMessageToChatWindow(System, "merk: Jeg svarer kun på spørsmål om informasjon på denne siten og ansattes CV'er og kan ikke brukes som en generell LLM");
+</script>
